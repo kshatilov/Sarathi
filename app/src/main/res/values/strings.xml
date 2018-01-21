@@ -1,0 +1,21 @@
+<resources>
+    <string name="client_id_default">SarathiAppSettings</string>
+    <string name="subscription_topic_default">/SarathiAppSettings</string>
+    <string name="server_id_default">tcp://iot.eclipse.org:1883</string>
+
+    <string name="app_name">Sarathi</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_start">StartActivity</string>
+    <string name="tab_text_1">Tab 1</string>
+    <string name="tab_text_2">Tab 2</string>
+    <string name="tab_text_3">Tab 3</string>
+    <string name="action_settings">Settings</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+    <string name="title_activity_tabbed">Sarathi</string>
+    <string name="server_uri">Server URI</string>
+    <string name="client_id">Client ID</string>
+    <string name="subscription_topic">Subscription topic</string>
+    <string name="reconnect_label">Reconnect</string>
+    <string name="publish_test_msg">Publish test msg</string>
+
+</resources>
