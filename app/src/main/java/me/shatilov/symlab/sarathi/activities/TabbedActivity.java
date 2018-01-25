@@ -10,6 +10,8 @@ import android.support.v13.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,25 +20,20 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import org.codehaus.jackson.map.ObjectMapper;
-import org.eclipse.paho.android.service.MqttAndroidClient;
-import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions;
-import org.eclipse.paho.client.mqttv3.IMqttActionListener;
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.IMqttToken;
-import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import me.shatilov.symlab.sarathi.R;
 import me.shatilov.symlab.sarathi.adapters.AppListArrayAdapter;
 import me.shatilov.symlab.sarathi.model.MiddleBoxModel;
 import me.shatilov.symlab.sarathi.model.SettingsModel;
+import me.shatilov.symlab.sarathi.mqqt.MqqtClientWrapper;
+import me.shatilov.symlab.sarathi.mqqt.EasyCallable;
 
 
 public class TabbedActivity extends AppCompatActivity {
@@ -48,7 +45,9 @@ public class TabbedActivity extends AppCompatActivity {
     };
 
     static String testMessage;
+
     static {
+        //test message creation
         try {
             testMessage = new ObjectMapper().writeValueAsString(new SettingsModel(new ArrayList<>(Arrays.asList(boxes))));
         } catch (IOException e) {
@@ -58,14 +57,41 @@ public class TabbedActivity extends AppCompatActivity {
 
     private BottomNavigationView bottomNavigationView;
     private SettingsModel config;
+    private Map<Integer, EasyCallable<String>> editTextConfig;
 
+    private AppListArrayAdapter appListAdapter;
     private List<View> settingsTab = new ArrayList<>();
     private List<View> appListTab = new ArrayList<>();
 
-    private MqttAndroidClient mqttAndroidClient;
-    private String serverUri;
-    private String subscriptionTopic;
-    private AppListArrayAdapter appListAdapter;
+    private MqqtClientWrapper settingsReceiver;
+    private MqqtClientWrapper metadataPublisher;
+    private String rec_clientId, pub_clientId;
+    private String rec_serverUri, pub_serverUri;
+    private String rec_subscriptionTopic, pub_subscriptionTopic;
+
+    public void setRec_clientId(String rec_clientId) {
+        this.rec_clientId = rec_clientId;
+    }
+
+    public void setPub_clientId(String pub_clientId) {
+        this.pub_clientId = pub_clientId;
+    }
+
+    public void setRec_serverUri(String rec_serverUri) {
+        this.rec_serverUri = rec_serverUri;
+    }
+
+    public void setPub_serverUri(String pub_serverUri) {
+        this.pub_serverUri = pub_serverUri;
+    }
+
+    public void setRec_subscriptionTopic(String rec_subscriptionTopic) {
+        this.rec_subscriptionTopic = rec_subscriptionTopic;
+    }
+
+    public void setPub_subscriptionTopic(String pub_subscriptionTopic) {
+        this.pub_subscriptionTopic = pub_subscriptionTopic;
+    }
 
     private void T(String message) {
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
@@ -97,90 +123,6 @@ public class TabbedActivity extends AppCompatActivity {
         }
     }
 
-    private void initMqqtClient() {
-        serverUri = ((EditText)findViewById(R.id.serverUriInput)).getText().toString();
-        subscriptionTopic = ((EditText)findViewById(R.id.subscriptionTopicInput)).getText().toString();
-        String clientId = ((EditText) findViewById(R.id.clientIdInput)).getText().toString();
-
-        mqttAndroidClient = new MqttAndroidClient(getApplicationContext(), serverUri, clientId);
-        mqttAndroidClient.setCallback(new MqttCallbackExtended() {
-            @Override
-            public void connectComplete(boolean reconnect, String serverURI) {
-
-                if (reconnect) {
-                    T("Reconnected to: " + serverURI);
-                    // Because Clean Session is true, we need to re-subscribe
-                    subscribeToTopic();
-                } else {
-//                    T("Connected to: " + serverURI);
-                }
-            }
-
-            @Override
-            public void connectionLost(Throwable cause) {
-                T("The connection was lost.");
-            }
-
-            @Override
-            public void messageArrived(String topic, MqttMessage message) throws Exception {
-                handleIncomingMessage(new String(message.getPayload()));
-            }
-
-            @Override
-            public void deliveryComplete(IMqttDeliveryToken token) {
-            }
-        });
-
-        MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
-        mqttConnectOptions.setAutomaticReconnect(true);
-        mqttConnectOptions.setCleanSession(false);
-
-        try {
-            //addToHistory("Connecting to " + serverUri);
-            mqttAndroidClient.connect(mqttConnectOptions, null, new IMqttActionListener() {
-                @Override
-                public void onSuccess(IMqttToken asyncActionToken) {
-                    DisconnectedBufferOptions disconnectedBufferOptions = new DisconnectedBufferOptions();
-                    disconnectedBufferOptions.setBufferEnabled(true);
-                    disconnectedBufferOptions.setBufferSize(100);
-                    disconnectedBufferOptions.setPersistBuffer(false);
-                    disconnectedBufferOptions.setDeleteOldestMessages(false);
-                    mqttAndroidClient.setBufferOpts(disconnectedBufferOptions);
-                    subscribeToTopic();
-                }
-
-                @Override
-                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                    T("Failed to connect to: " + serverUri);
-                }
-            });
-
-
-        } catch (MqttException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    public void subscribeToTopic() {
-        try {
-            mqttAndroidClient.subscribe(subscriptionTopic, 0, null, new IMqttActionListener() {
-                @Override
-                public void onSuccess(IMqttToken asyncActionToken) {
-                    T("Subscribed to: " + serverUri + subscriptionTopic);
-                }
-
-                @Override
-                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                    T("Failed to subscribe");
-                }
-            });
-
-        } catch (MqttException ex) {
-            System.err.println("Exception whilst subscribing");
-            ex.printStackTrace();
-        }
-    }
-
     private void handleIncomingMessage(String message) {
         try {
             SettingsModel newConfig = new ObjectMapper().readValue(message, SettingsModel.class);
@@ -196,20 +138,25 @@ public class TabbedActivity extends AppCompatActivity {
         }
     }
 
-    public void publishMessage(String publishMessage) {
-        try {
-            MqttMessage message = new MqttMessage();
-            message.setPayload(publishMessage.getBytes());
-            message.setRetained(true);
-            mqttAndroidClient.publish(subscriptionTopic, message);
-            T("Message Published");
-            if (!mqttAndroidClient.isConnected()) {
-                T(mqttAndroidClient.getBufferedMessageCount() + " messages in buffer.");
+    private void connectEditText2Field(int viewID, EasyCallable<String> setValue) {
+        EditText editText = findViewById(viewID);
+        setValue.accept(editText.getText().toString());
+        editText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
-        } catch (MqttException e) {
-            System.err.println("Error Publishing: " + e.getMessage());
-            e.printStackTrace();
-        }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.length() != 0) {
+                    setValue.accept(s.toString());
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
     }
 
     @Override
@@ -226,46 +173,63 @@ public class TabbedActivity extends AppCompatActivity {
         settingsTab.add(settingsView);
         appListTab.add(appListView);
 
-        config = new SettingsModel(new ArrayList<MiddleBoxModel>());
+        config = new SettingsModel(new ArrayList<>());
         appListAdapter = new AppListArrayAdapter(this, R.layout.app_list_item, config.getMiddleBoxes());
         appListAdapter.notifyDataSetChanged();
         appListView.setAdapter(appListAdapter);
 
         handleIconsColor();
         bottomNavigationView.setOnNavigationItemSelectedListener(
-                new BottomNavigationView.OnNavigationItemSelectedListener() {
-                    @Override
-                    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                        item.setChecked(true);
-                        handleIconsColor();
-                        renderActiveTab(item.getItemId());
-                        return false;
-                    }
+                item -> {
+                    item.setChecked(true);
+                    handleIconsColor();
+                    renderActiveTab(item.getItemId());
+                    return false;
                 }
         );
 
-        //Mqqt
+        //MQQT init
         int permissionCheck = ContextCompat.checkSelfPermission(this,
                 Manifest.permission.INTERNET);
         if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.INTERNET}, 1);
         }
-        initMqqtClient();
 
-        //Settings buttons
-        (findViewById(R.id.reconnect_button)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                initMqqtClient();
-            }
+        //connection of fields to EditViews
+        editTextConfig = new HashMap<>();
+        editTextConfig.put(R.id.serverUriInput, this::setRec_serverUri);
+        editTextConfig.put(R.id.subscriptionTopicInput, this::setRec_subscriptionTopic);
+        editTextConfig.put(R.id.clientIdInput, this::setRec_clientId);
+        editTextConfig.put(R.id.pub_serverUriInput, this::setPub_serverUri);
+        editTextConfig.put(R.id.pub_subscriptionTopicInput, this::setPub_subscriptionTopic);
+        editTextConfig.put(R.id.pub_clientIdInput, this::setPub_clientId);
+
+        for (Map.Entry e : editTextConfig.entrySet()){
+            connectEditText2Field((int)e.getKey(), (EasyCallable) e.getValue());
+        }
+
+        settingsReceiver = new MqqtClientWrapper(this, rec_serverUri, rec_subscriptionTopic, rec_clientId, this::T, this::handleIncomingMessage);
+        settingsReceiver.connect();
+
+        metadataPublisher = new MqqtClientWrapper(this, rec_serverUri, pub_subscriptionTopic, pub_clientId, this::T, (s) -> {/*incoming messages on this topic are ignored*/});
+        metadataPublisher.connect();
+
+        //Receiver settings buttons
+        (findViewById(R.id.reconnect_button)).setOnClickListener(v -> {
+            settingsReceiver.setClientID(rec_clientId)
+                    .setServerUri(rec_serverUri)
+                    .setSubscriptionTopic(rec_subscriptionTopic);
+
+            settingsReceiver.connect();
+
+            metadataPublisher.setClientID(pub_clientId)
+                    .setServerUri(pub_serverUri)
+                    .setSubscriptionTopic(pub_subscriptionTopic);
+
+            metadataPublisher.connect();
         });
 
-        (findViewById(R.id.test_button)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                publishMessage(testMessage);
-            }
-        });
+        (findViewById(R.id.test_button)).setOnClickListener(v -> settingsReceiver.publishMessage(testMessage));
     }
 }

@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <ListView
         android:id="@+id/apps_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:visibility="visible" />
 
     <android.support.design.widget.BottomNavigationView
         android:id="@+id/bottom_navigation"
@@ -24,73 +24,153 @@
         app:itemTextColor="@android:color/white"
         app:menu="@menu/menu_tabbed" />
 
-    <LinearLayout
+    <ScrollView
         android:id="@+id/settings_view"
-        android:layout_width="match_parent"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginLeft="22dp"
-        android:layout_marginRight="22dp"
-        android:visibility="gone">
+        android:visibility="gone"
+        android:layout_marginBottom="60dp">
 
-        <TextView
-            android:id="@+id/serverUriLabel"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="21dp"
-            android:text="@string/server_uri" />
+            android:layout_marginLeft="22dp"
+            android:layout_marginRight="22dp"
+            android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/serverUriInput"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="11dp"
-            android:ems="10"
-            android:inputType="textUri"
-            android:text="@string/server_id_default" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/layout_border"
+                android:orientation="vertical"
+                android:padding="8dp">
 
-        <TextView
-            android:id="@+id/clientIdLabel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="21dp"
-            android:text="@string/client_id" />
+                <TextView
+                    android:id="@+id/serverUriLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="0dp"
+                    android:text="@string/sub_server_uri" />
 
-        <EditText
-            android:id="@+id/clientIdInput"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="11dp"
-            android:ems="10"
-            android:inputType="text"
-            android:text="@string/client_id_default" />
+                <EditText
+                    android:id="@+id/serverUriInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="0dp"
+                    android:ems="10"
+                    android:inputType="textUri"
+                    android:text="@string/sub_server_id_default"
+                    android:textSize="12sp" />
 
-        <TextView
-            android:id="@+id/subscriptionTopicLabel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="21dp"
-            android:text="@string/subscription_topic" />
+                <TextView
+                    android:id="@+id/clientIdLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="0dp"
+                    android:text="@string/sub_client_id" />
 
-        <EditText
-            android:id="@+id/subscriptionTopicInput"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="11dp"
-            android:ems="10"
-            android:inputType="textPersonName"
-            android:text="@string/subscription_topic_default" />
+                <EditText
+                    android:id="@+id/clientIdInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="0dp"
+                    android:ems="10"
+                    android:inputType="text"
+                    android:text="@string/sub_client_id_default"
+                    android:textSize="12sp" />
 
-        <Button
-            android:id="@+id/reconnect_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/reconnect_label"/>
+                <TextView
+                    android:id="@+id/subscriptionTopicLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="0dp"
+                    android:text="@string/sub_subscription_topic" />
 
-        <Button
-            android:id="@+id/test_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/publish_test_msg"/>
-    </LinearLayout>
+                <EditText
+                    android:id="@+id/subscriptionTopicInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="0dp"
+                    android:ems="10"
+                    android:inputType="textPersonName"
+                    android:text="@string/sub_subscription_topic_default"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:layout_marginTop="0dp"
+                android:background="@drawable/layout_border"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <TextView
+                    android:id="@+id/pub_serverUriLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="0dp"
+                    android:text="@string/pub_server_uri" />
+
+                <EditText
+                    android:id="@+id/pub_serverUriInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="0dp"
+                    android:ems="10"
+                    android:inputType="textUri"
+                    android:text="@string/pub_server_id_default"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/pub_clientIdLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="0dp"
+                    android:text="@string/pub_client_id" />
+
+                <EditText
+                    android:id="@+id/pub_clientIdInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="0dp"
+                    android:ems="10"
+                    android:inputType="text"
+                    android:text="@string/pub_client_id_default"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/pub_subscriptionTopicLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="0dp"
+                    android:text="@string/pub_subscription_topic" />
+
+                <EditText
+                    android:id="@+id/pub_subscriptionTopicInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="0dp"
+                    android:ems="10"
+                    android:inputType="textPersonName"
+                    android:text="@string/pub_subscription_topic_default"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/reconnect_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/reconnect_label" />
+
+            <Button
+                android:id="@+id/test_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/publish_test_msg" />
+        </LinearLayout>
+    </ScrollView>
 </RelativeLayout>

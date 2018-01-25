@@ -1,7 +1,11 @@
 <resources>
-    <string name="client_id_default">SarathiAppSettings</string>
-    <string name="subscription_topic_default">/SarathiAppSettings</string>
-    <string name="server_id_default">tcp://iot.eclipse.org:1883</string>
+    <string name="sub_client_id_default">SarathiAppSettingsSubscriber</string>
+    <string name="sub_subscription_topic_default">/SarathiAppSettings</string>
+    <string name="sub_server_id_default">tcp://iot.eclipse.org:1883</string>
+
+    <string name="pub_client_id_default">SarathiAppMetadataPublisher</string>
+    <string name="pub_subscription_topic_default">/SarathiAppMetadataPublisher</string>
+    <string name="pub_server_id_default">tcp://iot.eclipse.org:1883</string>
 
     <string name="app_name">Sarathi</string>
     <string name="title_activity_main">MainActivity</string>
@@ -12,10 +16,15 @@
     <string name="action_settings">Settings</string>
     <string name="section_format">Hello World from section: %1$d</string>
     <string name="title_activity_tabbed">Sarathi</string>
-    <string name="server_uri">Server URI</string>
-    <string name="client_id">Client ID</string>
-    <string name="subscription_topic">Subscription topic</string>
+    <string name="sub_server_uri">Subscriber Server URI</string>
+    <string name="sub_client_id">Subscriber Client ID</string>
+    <string name="sub_subscription_topic">Subscription topic</string>
+    <string name="pub_server_uri">Publisher Server URI</string>
+    <string name="pub_client_id">Publisher Client ID</string>
+    <string name="pub_subscription_topic">Publisher topic</string>
     <string name="reconnect_label">Reconnect</string>
-    <string name="publish_test_msg">Publish test msg</string>
+    <string name="publish_test_msg">Publish config msg</string>
+    <string name="app_list">App list</string>
+    <string name="settings">Settings</string>
 
 </resources>

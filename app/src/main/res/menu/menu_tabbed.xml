@@ -2,13 +2,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:title="App list"
+        android:title="@string/app_list"
         android:id="@+id/action_list"
         android:enabled="true"
         android:icon="@mipmap/list"
         app:showAsAction="ifRoom" />
+
     <item
-        android:title="Settings"
+        android:title="@string/settings"
         android:id="@+id/action_settings"
         android:enabled="true"
         
