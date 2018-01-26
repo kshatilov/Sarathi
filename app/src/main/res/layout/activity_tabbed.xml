@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/MainActivityLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -8,21 +9,15 @@
         android:id="@+id/apps_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="visible" />
+        android:visibility="visible"
+        android:layout_marginBottom="60dp"/>
 
-    <android.support.design.widget.BottomNavigationView
-        android:id="@+id/bottom_navigation"
+    <TextView
+        android:id="@+id/observer"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:background="@color/colorPrimary"
-        app:itemBackground="@color/colorPrimary"
-        app:itemIconTint="@color/colorPrimaryDark"
-
-        app:itemTextColor="@android:color/white"
-        app:menu="@menu/menu_tabbed" />
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:layout_marginBottom="60dp"/>
 
     <ScrollView
         android:id="@+id/settings_view"

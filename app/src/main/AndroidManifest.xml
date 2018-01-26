@@ -18,7 +18,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".activities.TabbedActivity"
+            android:name=".activities.SarathiMainActivity"
             android:label="@string/title_activity_tabbed">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

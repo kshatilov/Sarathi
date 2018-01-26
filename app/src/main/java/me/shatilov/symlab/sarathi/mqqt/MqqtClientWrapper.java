@@ -1,6 +1,7 @@
 package me.shatilov.symlab.sarathi.mqqt;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions;
@@ -11,6 +12,8 @@ import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+
+import me.shatilov.utility.EasyCallable;
 
 /**
  * Created by Kirill on 24-Jan-18.
@@ -29,9 +32,9 @@ public class MqqtClientWrapper {
     private EasyCallable<String> messageHandler;
 
     public MqqtClientWrapper(Context context,
-                             String serverUri,
-                             String subscriptionTopic,
-                             String clientID,
+                             @Nullable String serverUri,
+                             @Nullable String subscriptionTopic,
+                             @Nullable String clientID,
                              EasyCallable<String> notificationChannel,
                              EasyCallable<String> messageHandler) {
         this.context = context;
@@ -41,6 +44,7 @@ public class MqqtClientWrapper {
         this.notificationChannel = notificationChannel;
         this.messageHandler = messageHandler;
     }
+
 
     public MqqtClientWrapper setServerUri(String serverUri) {
         this.serverUri = serverUri;

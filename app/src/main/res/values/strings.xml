@@ -26,5 +26,6 @@
     <string name="publish_test_msg">Publish config msg</string>
     <string name="app_list">App list</string>
     <string name="settings">Settings</string>
+    <string name="observer">Observer</string>
 
 </resources>

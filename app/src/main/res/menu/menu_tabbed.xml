@@ -12,7 +12,6 @@
         android:title="@string/settings"
         android:id="@+id/action_settings"
         android:enabled="true"
-        
         android:icon="@mipmap/settings"
         app:showAsAction="ifRoom" />
 
