@@ -27,5 +27,6 @@
     <string name="app_list">App list</string>
     <string name="settings">Settings</string>
     <string name="observer">Observer</string>
+    <string name="observer_button">Publish metadata through service</string>
 
 </resources>

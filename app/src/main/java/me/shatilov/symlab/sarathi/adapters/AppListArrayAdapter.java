@@ -42,11 +42,11 @@ public class AppListArrayAdapter extends ArrayAdapter<MiddleBoxModel> {
         _switch.setText(values.get(position).getAppName());
         _switch.setChecked(false);
 
-        _switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                Toast.makeText(context, "Sarathi is " + (isChecked ? "enabled" : "disabled") + " for " + values.get(position).getAppName(), Toast.LENGTH_LONG).show();
-            }
+        _switch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            /*
+             * TODO: Configure service according to selected tumblers.
+             */
+            Toast.makeText(context, "Sarathi is " + (isChecked ? "enabled" : "disabled") + " for " + values.get(position).getAppName(), Toast.LENGTH_LONG).show();
         });
 
         return rowView;

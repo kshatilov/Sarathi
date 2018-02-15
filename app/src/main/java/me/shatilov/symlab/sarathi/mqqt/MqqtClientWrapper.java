@@ -71,7 +71,7 @@ public class MqqtClientWrapper {
         return this;
     }
 
-    public void connect() {
+    public MqqtClientWrapper connect() {
 
         mqttAndroidClient = new MqttAndroidClient(context, serverUri, clientID);
         mqttAndroidClient.setCallback(new MqttCallbackExtended() {
@@ -129,6 +129,7 @@ public class MqqtClientWrapper {
         } catch (MqttException ex) {
             notificationChannel.accept(ex.getMessage());
         }
+        return this;
     }
 
     public void subscribeToTopic() {
@@ -150,19 +151,32 @@ public class MqqtClientWrapper {
         }
     }
 
-    public void publishMessage(String publishMessage) {
+    public MqqtClientWrapper publishMessage(String publishMessage) {
+        return this.publishMessage(publishMessage, false);
+    }
+
+    public MqqtClientWrapper publishMessage(String publishMessage, boolean retained) {
         try {
             MqttMessage message = new MqttMessage();
             message.setPayload(publishMessage.getBytes());
-            message.setRetained(true);
+            message.setRetained(retained);
             mqttAndroidClient.publish(subscriptionTopic, message);
             notificationChannel.accept("Message Published");
-            if (!mqttAndroidClient.isConnected()) {
+            if (!mqttAndroidClient.isConnected() && mqttAndroidClient != null) {
                 notificationChannel.accept(mqttAndroidClient.getBufferedMessageCount() + " messages in buffer.");
             }
         } catch (MqttException e) {
-            System.err.println("Error Publishing: " + e.getMessage());
-            e.printStackTrace();
+            notificationChannel.accept("Error Publishing: " + e.getMessage());
+        }
+        return this;
+    }
+
+    public void disconnect() {
+        try {
+            mqttAndroidClient.disconnect();
+            mqttAndroidClient.unregisterResources();
+        } catch (MqttException e) {
+            notificationChannel.accept("Disconnect failed:" + e.getMessage());
         }
     }
 }

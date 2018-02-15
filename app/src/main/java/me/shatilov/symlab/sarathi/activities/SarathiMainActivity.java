@@ -1,23 +1,26 @@
 package me.shatilov.symlab.sarathi.activities;
 
 import android.Manifest;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
-import android.support.design.widget.BottomNavigationView;
+import android.os.IBinder;
 import android.support.v13.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.codehaus.jackson.map.ObjectMapper;
@@ -31,9 +34,11 @@ import java.util.Map;
 
 import me.shatilov.symlab.sarathi.R;
 import me.shatilov.symlab.sarathi.adapters.AppListArrayAdapter;
+import me.shatilov.symlab.sarathi.adapters.ServiceObserver;
 import me.shatilov.symlab.sarathi.model.MiddleBoxModel;
 import me.shatilov.symlab.sarathi.model.SettingsModel;
 import me.shatilov.symlab.sarathi.mqqt.MqqtClientWrapper;
+import me.shatilov.symlab.sarathi.service.SarathiService;
 import me.shatilov.utility.EasyCallable;
 import me.shatilov.utility.android.TabsWrapper;
 
@@ -65,10 +70,22 @@ public class SarathiMainActivity extends AppCompatActivity {
     private List<View> appListTab = new ArrayList<>();
 
     private MqqtClientWrapper settingsReceiver;
-    private MqqtClientWrapper metadataPublisher;
+    private String publisherServerURI;
+    private String publisherTopic;
+
+    private SarathiService service;
+    private ServiceObserver serviceObserver;
 
     private void T(String message) {
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+    }
+
+    public void setPublisherServerURI(String publisherServerURI) {
+        this.publisherServerURI = publisherServerURI;
+    }
+
+    public void setPublisherTopic(String publisherTopic) {
+        this.publisherTopic = publisherTopic;
     }
 
     private void handleIncomingMessage(String message) {
@@ -117,6 +134,8 @@ public class SarathiMainActivity extends AppCompatActivity {
         View settingsView = findViewById(R.id.settings_view);
         ListView appListView = findViewById(R.id.apps_list);
         View observerView = findViewById(R.id.observer);
+        TextView observer = findViewById(R.id.observer_log);
+
         settingsTab.add(settingsView);
         appListTab.add(appListView);
 
@@ -143,30 +162,69 @@ public class SarathiMainActivity extends AppCompatActivity {
                     new String[]{Manifest.permission.INTERNET}, 1);
         }
         settingsReceiver = new MqqtClientWrapper(this, null, null, null, this::T, this::handleIncomingMessage);
-        metadataPublisher = new MqqtClientWrapper(this, null, null, null, this::T, (s) -> {/*incoming messages on this topic are ignored*/});
 
         //connection of fields to EditViews
         editTextConfig = new HashMap<>();
         editTextConfig.put(R.id.serverUriInput, settingsReceiver::setServerUri);
         editTextConfig.put(R.id.subscriptionTopicInput, settingsReceiver::setSubscriptionTopic);
         editTextConfig.put(R.id.clientIdInput, settingsReceiver::setClientID);
-        editTextConfig.put(R.id.pub_serverUriInput, metadataPublisher::setServerUri);
-        editTextConfig.put(R.id.pub_subscriptionTopicInput, metadataPublisher::setSubscriptionTopic);
-        editTextConfig.put(R.id.pub_clientIdInput, metadataPublisher::setClientID);
+        editTextConfig.put(R.id.pub_serverUriInput, this::setPublisherServerURI);
+        editTextConfig.put(R.id.pub_subscriptionTopicInput, this::setPublisherTopic);
 
         for (Map.Entry e : editTextConfig.entrySet()){
             connectEditText2Field((int)e.getKey(), (EasyCallable<String>) e.getValue());
         }
 
         settingsReceiver.connect();
-        metadataPublisher.connect();
 
         //Receiver settings buttons
         (findViewById(R.id.reconnect_button)).setOnClickListener(v -> {
             settingsReceiver.connect();
-            metadataPublisher.connect();
+            Intent serviceIntent = new Intent(this, SarathiService.class);
+            serviceIntent.putExtra(SarathiService.URI_PARAM, publisherServerURI);
+            serviceIntent.putExtra(SarathiService.TOPIC_PARAM, publisherTopic);
+            bindService(serviceIntent, mConnection, Context.BIND_AUTO_CREATE);
         });
 
         (findViewById(R.id.test_button)).setOnClickListener(v -> settingsReceiver.publishMessage(testMessage));
+
+        serviceObserver = new ServiceObserver(observer::append);
+        observer.append("Service Started");
+
+        Intent serviceIntent = new Intent(this, SarathiService.class);
+        serviceIntent.putExtra(SarathiService.URI_PARAM, publisherServerURI);
+        serviceIntent.putExtra(SarathiService.TOPIC_PARAM, publisherTopic);
+        bindService(serviceIntent, mConnection, Context.BIND_AUTO_CREATE);
+
+        findViewById(R.id.testServiceButton).setOnClickListener((e) -> {
+            String msg = android.text.format.DateFormat.format("yyyy-MM-dd hh:mm:ss a", new java.util.Date())
+                    + ": some traffic data";
+            service.sendData(msg);
+        });}
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(serviceObserver);
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(serviceObserver, new IntentFilter(SarathiService.SERVICE_NAME));
+    }
+
+    private ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder ibinder) {
+            SarathiService.LocalBinder binder = (SarathiService.LocalBinder) ibinder;
+            service = binder.getService();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+        }
+    };
 }
